@@ -5,26 +5,110 @@ date: "11/11/2020"
 output: html_document
 ---
 
+## Part 1: Attach packages
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(palmerpenguins)
+library(ggpubr)
+library(broom)
 ```
 
-## R Markdown
+## Part 2: a rank-based test example (Mann Whitney U)
+- create two sample vectors 
+- use sample.int() to create random samples with integers 1 to x, of size =?, with replacement
+- explore each vector with a histogram 
+```{r}
+set.seed(1414)
+gp_1 <- sample.int(20, size = 15, replace = TRUE)
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+set.seed(1424)
+gp_2 <- sample.int(30, size = 15, replace = TRUE)
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+# Exploratory histogram 
+hist(gp_1)
+hist(gp_2)
 
-```{r cars}
-summary(cars)
 ```
 
-## Including Plots
+### Why choose a rank-based test? 
 
-You can also embed plots, for example:
+1. Not clearly normally distributed from exploratory histograms 
+2. Somewhat small sample size (n=15)
+3. I've decided ranks (or medians) are a more valuable metric to compare these data 
 
-```{r pressure, echo=FALSE}
-plot(pressure)
+## Perform Mann-Whitney U 
+- to answer "is there a significant difference in ranks (medians) between gp_1 and gp_2? 
+- using the wilcox.test() function 
+
+```{r}
+my_mwu <- wilcox.test(gp_1, gp_2) # Call in console to view 
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+
+### What does the p-value of 0.28 mean? 
+
+- It means that if the null hypothesis is true (these samples were drawn from populations with the same median), there is a probability of 0.28 that we could have found median values *at least as different as ours* by chance.
+
+## Part 3: Simple linear regression 
+- use the penguins data set to explore the relationship between flipper length and body mass for penguins , including all 3 penguin species in the data set 
+
+### Part 3(A): Look at data 
+- make an exploratory scatterplot 
+
+```{r}
+ggplot(data = penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point()
+```
+### Questions to ask: 
+
+1. does it look like a linear relationship makes sense? 
+2. do we have any concerns about modeling as a linear relationship? 
+3. any notable outliers? 
+4. initial thoughts about homoscedasticity? 
+
+### Part 3(B): Model it 
+- using lm() function 
+
+```{r}
+# Linear model, stored as penguin_lm 
+penguin_lm <- lm(body_mass_g ~ flipper_length_mm, data = penguins)
+
+# Return the complete overview: 
+summary(penguin_lm)
+```
+The multiple R2 value is 0.759- meaning that 75.9% of variance in body mass is explained by flipper length. 
+
+### Part 3(C): Access model outputs
+
+We can access the coefficients for the model using: 
+
+- the slope is 49.69 (g/mm)
+- the y-intercept is -5780.83
+- the full equation is mass = 49.49*(flipperlength) + (-5780.83)
+
+
+```{r}
+# use the broom::tidy() function to get model outputs in nice data format 
+penguin_lm_tidy <- broom::tidy(penguin_lm)
+
+# Look at output by calling it in the console 
+
+# Get the intercept: 
+penguin_int <- penguin_lm_tidy$estimate[1]
+penguin_int
+
+# Get the flipper_length coefficient: 
+penguin_coef <- penguin_lm_tidy$estimate[2]
+penguin_coef
+
+# Metrics at a glance: 
+penguin_lm_out <- broom::glance(penguin_lm)
+penguin_lm_out
+  
+
+```
+
+
+
