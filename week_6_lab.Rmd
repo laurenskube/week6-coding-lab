@@ -109,6 +109,64 @@ penguin_lm_out
   
 
 ```
+"Simple linear regression was used to explore the relationship between penguin flipper length (mm) and body mass (g) across all three penguin species, and including both male and female penguins. A significant regression model was found (β = 49.686, F(1,340) = 1070.7, p < 0.001) with an R2 of 0.759.”
+
+### Part 3(D): Explore model assumptions 
+
+We have assumptions for linear regression model we need to explore, some related to the residuals. 
+- Linearly related variables (CHECK - already looked and thought hard about)
+- Normally distributed *residuals*
+- Homoscedasticity (constant residual variance)
+- iid residuals (no serial correlation) - more often a concern in time series data 
+
+```{r}
+# use the plot() function - will already create four useful visualizations to consider assumptions
+plot(penguin_lm)
+```
+
+- graphs 1 & 3 are useful for thinking about homoscedasticity 
+- graph 2 (QQ plot) helps us consider normality of residuals 
+- graph 4 reveals Cook's distance (a measure of how much leverage any single observation has on the model)
+
+### E. Visualize the model 
+- we've looked at assumptions and decided linear regression is a valid tool to describe the relationship between flipper length and body mass 
+- now use geom_smooth() to add a linear model to an existing scatterplot 
+- Use stat_cor() and/or stat_regline_equation() to add equation information directly to the plot panel, at an x- and y-position that you specify 
+
+```{r}
+ggplot(data = penguins, aes(x = flipper_length_mm, y = body_mass_g)) + 
+  geom_point(size = 2) + 
+  geom_smooth(method = "lm", 
+              color = "red", 
+              size = 0.5, 
+              fill = "gray10",
+              alpha = 0.5) + 
+  theme_light() + 
+  ggpubr::stat_regline_equation(label.x = 180, label.y = 5700)
+```
+
+
+### F. Find Pearson's r for correlation 
+- to tell us the strength of the correlation (degrees of relationship) between the two variables which, for two linearly related continuous variables, can be expressed using Pearson's r 
+- Typical guidelines: 
+
+- r = 0, no correlation
+- r < |0.3| and |0.7|: moderate correlation 
+- r > |0.7|: strong correlation 
+
+```{r}
+penguins_cor <- cor.test(penguins$flipper_length_mm, penguins$body_mass_g)
+
+penguins_cor
+```
+
+- We see that there is a strong positive correlation between flipper length and body mass (r = 0.87, t(340) = 32.72, p<0.0001)
+
+
+## End of lab 
+
+
+
 
 
 
